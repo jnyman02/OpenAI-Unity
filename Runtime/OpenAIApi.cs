@@ -56,119 +56,83 @@ namespace OpenAI
             },
             Culture = CultureInfo.InvariantCulture
         };
-        
+
+
         /// <summary>
         ///     Dispatches an HTTP request to the specified path with the specified method and optional payload.
         /// </summary>
         /// <param name="path">The path to send the request to.</param>
         /// <param name="method">The HTTP method to use for the request.</param>
-        /// <param name="payload">An optional byte array of json payload to include in the request.</param>
+        /// <param name="payload">An optional byte array of json or binary payload to include in the request.</param>
         /// <typeparam name="T">Response type of the request.</typeparam>
         /// <returns>A Task containing the response from the request as the specified type.</returns>
-        // private async Task<T> DispatchRequest<T>(string path, string method, byte[] payload = null) where T: IResponse
-        // {
-        //     T data;
-            
-        //     using (var request = UnityWebRequest.Put(path, payload))
-        //     {
-        //         request.method = method;
-        //         request.SetHeaders(Configuration, ContentType.ApplicationJson);
-                
-        //         var asyncOperation = request.SendWebRequest();
-
-        //         while (!asyncOperation.isDone) await Task.Yield();
-                
-        //         data = JsonConvert.DeserializeObject<T>(request.downloadHandler.text, jsonSerializerSettings);
-        //     }
-            
-        //     if (data?.Error != null)
-        //     {
-        //         ApiError error = data.Error;
-        //         Debug.LogError($"Error Message: {error.Message}\nError Type: {error.Type}\n");
-        //     }
-
-        //     if (data?.Warning != null)
-        //     {
-        //         Debug.LogWarning(data.Warning);
-        //     }
-            
-        //     return data;
-        // }
-
-
-
-    private async Task<T> DispatchRequest<T>(string path, string method, byte[] payload = null) where T : IResponse
-    {
-        T data;
-
-        using (var request = UnityWebRequest.Put(path, payload))
+        private async Task<T> DispatchRequest<T>(string path, string method, byte[] payload = null) where T : IResponse
         {
-            request.method = method;
-            request.SetHeaders(Configuration, ContentType.ApplicationJson);
-            
-            var asyncOperation = request.SendWebRequest();
+            T data;
 
-            while (!asyncOperation.isDone) await Task.Yield();
+            using (var request = UnityWebRequest.Put(path, payload))
+            {
+                request.method = method;
+                request.SetHeaders(Configuration, ContentType.ApplicationJson);
+                
+                var asyncOperation = request.SendWebRequest();
 
-            // Check content type
-            string contentType = request.GetResponseHeader("content-type");
-            if (contentType != null && contentType.Contains("application/json"))
-            {
-                // Handle JSON response
-                try
+                while (!asyncOperation.isDone) await Task.Yield();
+
+                // Check content type
+                string contentType = request.GetResponseHeader("content-type");
+                if (contentType != null && contentType.Contains("application/json"))
                 {
-                    data = JsonConvert.DeserializeObject<T>(request.downloadHandler.text, jsonSerializerSettings);
-                }
-                catch (JsonReaderException ex)
-                {
-                    Debug.LogError("JSON parsing error: " + ex.Message);
-                    throw;
-                }
-            }
-            else
-            {
-                // Handle binary response
-                try
-                {
-                    // Assuming you have a byte[] field in your response type to store binary data
-                    var responseData = request.downloadHandler.data;
-                    Debug.Log("Binary data received: " + responseData);
-                    data = Activator.CreateInstance<T>();
-                    if (data is IResponseWithBinaryContent binaryContentResponse)
+                    // Handle JSON response
+                    try
                     {
-                        binaryContentResponse.BinaryContent = responseData;
+                        data = JsonConvert.DeserializeObject<T>(request.downloadHandler.text, jsonSerializerSettings);
                     }
-                    else
+                    catch (JsonReaderException ex)
                     {
-                        Debug.LogError("Response type does not support binary content.");
+                        Debug.LogError("JSON parsing error: " + ex.Message);
+                        throw;
                     }
                 }
-                catch (Exception ex)
+                else
                 {
-                    Debug.LogError("Binary data processing error: " + ex.Message);
-                    throw;
+                    // Handle binary response
+                    try
+                    {
+                        // Assuming you have a byte[] field in your response type to store binary data
+                        var responseData = request.downloadHandler.data;
+                        data = Activator.CreateInstance<T>();
+                        if (data is IResponseWithBinaryContent binaryContentResponse)
+                        {
+                            binaryContentResponse.BinaryContent = responseData;
+                        }
+                        else
+                        {
+                            Debug.LogError("Response type does not support binary content.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError("Binary data processing error: " + ex.Message);
+                        throw;
+                    }
                 }
             }
+
+            if (data?.Error != null)
+            {
+                ApiError error = data.Error;
+                Debug.LogError($"Error Message: {error.Message}\nError Type: {error.Type}\n");
+            }
+
+            if (data?.Warning != null)
+            {
+                Debug.LogWarning(data.Warning);
+            }
+
+            return data;
         }
 
-        if (data?.Error != null)
-        {
-            ApiError error = data.Error;
-            Debug.LogError($"Error Message: {error.Message}\nError Type: {error.Type}\n");
-        }
-
-        if (data?.Warning != null)
-        {
-            Debug.LogWarning(data.Warning);
-        }
-
-        return data;
-    }
-
-
-
-
-        
         /// <summary>
         ///     Dispatches an HTTP request to the specified path with the specified method and optional payload.
         /// </summary>
@@ -449,9 +413,6 @@ namespace OpenAI
         {
             var path = $"{BASE_PATH}/audio/speech";
             var payload = CreatePayload(request);
-
-            Debug.Log(path);
-            Debug.Log(payload);
 
             return await DispatchRequest<CreateTtsAudioResponse>(path, UnityWebRequest.kHttpVerbPOST, payload);
         }
