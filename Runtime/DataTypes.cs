@@ -161,7 +161,7 @@ namespace OpenAI
     #region Text-To-Speech Data Types
 
 
-    public class CreateTtsAudioRequest:
+    public class CreateTtsAudioRequest
     {
         public string Model { get; set; }
         public string Input { get; set; }
