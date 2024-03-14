@@ -170,11 +170,11 @@ namespace OpenAI
         public float? Speed { get; set; } = 1;
     }
 
-    public class CreateTtsAudioResponse: IResponse
+    public class CreateTtsAudioResponse: IResponseWithBinaryContent
     {
         public ApiError Error { get; set; }
         public string Warning { get; set; }
-        public string AudioContent { get; set; }
+        public byte[] BinaryContent { get; set; }
     }
     
 
