@@ -153,7 +153,36 @@ namespace OpenAI
     }
     
     public class CreateAudioTranslationRequest: CreateAudioRequestBase { }
+
+
+
+
+
+    #region Text-To-Speech Data Types
+
+
+    public class CreateTtsAudioRequest:
+    {
+        public string Model { get; set; }
+        public string Input { get; set; }
+        public string Voice { get; set; }
+        public string ResponseFormat { get; set; } = TtsResponseFormat.Mp3;
+        public float? Speed { get; set; } = 1;
+    }
+
+    public class CreateTtsAudioResponse: IResponse
+    {
+        public ApiError Error { get; set; }
+        public string Warning { get; set; }
+        public string AudioContent { get; set; }
+    }
     
+
+    #endregion
+
+
+
+
     public struct CreateAudioResponse: IResponse
     {
         public ApiError Error { get; set; }
@@ -372,6 +401,16 @@ namespace OpenAI
         public const string Srt = "srt";
         public const string VerboseJson = "verbose_json";
         public const string Vtt = "vtt";
+    }
+
+    public static class TtsResponseFormat
+    {
+        public const string Mp3 = "mp3";
+        public const string Wav = "wav";
+        public const string Aac = "aac";
+        public const string Flac = "flac";
+        public const string Opus = "opus";
+        public const string Pcm = "pcm";
     }
     
     public static class ModerationModel

@@ -361,6 +361,28 @@ namespace OpenAI
 
             return await DispatchRequest<CreateAudioResponse>(path, form);
         }
+
+
+
+
+
+        /// <summary>
+        ///     Converts text to speech using the specified model.
+        /// </summary>
+        /// <param name="request">See <see cref="CreateTtsAudioRequest"/></param>
+        /// <returns>See <see cref="CreateTtsAudioResponse"/></returns>
+        public async Task<CreateTtsAudioResponse> CreateTtsAudio(CreateTtsAudioRequest request)
+        {
+            var path = $"{BASE_PATH}/audio/speech";
+            var payload = CreatePayload(request);
+
+            return await DispatchRequest<CreateTtsAudioResponse>(path, UnityWebRequest.kHttpVerbPOST, payload);
+        }
+
+
+
+
+
         
         /// <summary>
         ///     Returns a list of files that belong to the user's organization.
